@@ -1,6 +1,6 @@
 package com.lishion.iBAW.model
 
-import com.lishion.iBAW.data.{Record, Records}
+import com.lishion.iBAW.data.Records
 
 import scala.collection.mutable.ListBuffer
 

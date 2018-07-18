@@ -1,6 +1,7 @@
 package com.lishion.iBAW.model
 
-import com.lishion.iBAW.data.{Record, Records}
+import com.lishion.iBAW.data.Records
+import main.scala.com.lishion.iBAW.model.Utils.Record
 
 
 class Estimator(records: Records){

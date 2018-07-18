@@ -9,7 +9,7 @@ import scala.io.Source
 
 object Test{
     def main(args: Array[String]): Unit = {
-        val loader = new JsonDataLoader("urlData.json")
+        val loader = new JsonDataLoader("testData.json")
         val records = loader.load()
         val iBAW = new IBAW(records,50,256)
         val model = iBAW.createModel()
