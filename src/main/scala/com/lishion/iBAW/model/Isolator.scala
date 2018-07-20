@@ -1,39 +1,34 @@
 package com.lishion.iBAW.model
 
-import com.lishion.iBAW.data.Records
+import com.lishion.iBAW.data.{Records, SampleTraceRecords}
 import main.scala.com.lishion.iBAW.model.Utils
 import main.scala.com.lishion.iBAW.model.Utils.Record
+
 import scala.collection.mutable
 import scala.util.Random
 
 // 将 record 从 records 中隔离
 // records 训练集合
 // record 测试样本
-class Isolator(record: Record,records: Records){
+class Isolator(record: Record,records: SampleTraceRecords){
 
     private val remainderRecords = new ThreadLocal[mutable.Buffer[Record]]()
-    remainderRecords.set(records.get())
+    remainderRecords.set(records.copy())
 
     private val path = new ThreadLocal[Int]()
     path.set(0)
 
     def isolate():Double = {
 
-        val records = remainderRecords.get()
+        val localRecords = remainderRecords.get()
         val traces = {
-            val clonedTraces = if(record.length > 20) Utils.randomTake(record,20) else record
-            mutable.Buffer(clonedTraces:_*)
+
+            val clonedTraces = records.maybeSample(record)
+            mutable.Buffer(clonedTraces.distinct:_*)
         }
         while (this.keep && traces.nonEmpty){
             val trace = randomChooseAndRemove(traces)
-            records.foreach(record=>{
-                if(!record.contains(trace)){
-                    records -= record
-                    remainderRecords.set(records)
-                }else{
-                    record -= trace
-                }
-            })
+            remainderRecords.set(localRecords.filter(r => !r.contains(trace)))
             path.set(path.get()+1)
         }
         path.get()

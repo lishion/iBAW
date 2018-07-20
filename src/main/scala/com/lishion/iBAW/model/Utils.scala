@@ -28,4 +28,10 @@ object Utils {
         true
     }
 
+    def main(args: Array[String]): Unit = {
+
+    }
+
 }
+
+

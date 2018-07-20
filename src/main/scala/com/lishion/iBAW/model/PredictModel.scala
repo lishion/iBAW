@@ -1,5 +1,7 @@
 package com.lishion.iBAW.model
 
+import main.scala.com.lishion.iBAW.model.Utils.Record
+
 trait PredictModel {
     protected def abnormalScores(length:Double):Double
     def predict(record: Record):(Double,Double)

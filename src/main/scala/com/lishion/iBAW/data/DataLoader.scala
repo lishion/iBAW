@@ -1,6 +1,10 @@
 package com.lishion.iBAW.data
-import com.alibaba.fastjson._
+import java.io.FileWriter
 
+import com.alibaba.fastjson._
+import main.scala.com.lishion.iBAW.model.Utils.Record
+
+import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.io.Source
 
@@ -10,50 +14,57 @@ trait DataLoader {
 
 class JsonDataLoader(path:String) extends DataLoader{
 
-    override def load(): Records = {
+    override def load(): SimpleRecords = {
         val records = new ListBuffer[Record]
         val file = Source.fromFile(path)
         var index = 0
+        var itemMap = mutable.Map[Int,String]()
         for(line <- file.getLines()){
             try {
                 val jsObj =  JSON.parseObject(line)
 
-                val ip = jsObj.getString("ip")
+                records += loadJSArrayToBuffer(jsObj,"url_and_time")
+                itemMap += (index -> jsObj.getString("ip"))
 
-                val jsArray =  jsObj.getJSONArray("url_and_time")
-                val urls:Array[String] = new Array[String](jsArray.size())
-                jsArray.toArray(urls)
-
-                records += new Record(ip,urls,index)
                 index += 1
             }catch {
                 case e:Exception=>{
-                    println(line)
+                    println("load data error!!",line)
+                    e.printStackTrace()
                 }
             }
         }
 
-        new Records(records)
+        new SimpleRecords(records,itemMap)
+    }
+
+    private def loadJSArrayToBuffer(jsObj:JSONObject,key:String):mutable.Buffer[String]={
+        val jsArray =  jsObj.getJSONArray(key)
+        val urls:Array[String] = new Array[String](jsArray.size())
+        jsArray.toArray(urls)
+        ListBuffer(urls:_*)
     }
 }
 
-object JsonDataLoader{
-    def main(args: Array[String]): Unit = {
-        val file = Source.fromFile("urlData.json")
-        var index = 0
-        var max = 0
-        var ipMax:String = ""
+
+
+class  TextDataLoader(path:String) extends DataLoader {
+    override def load(): Records = {
+        val file = Source.fromFile(path)
+        val index = 0
+        var records = new ListBuffer[Record]
+        var itemMap = mutable.Map[Int,String]()
         for(line <- file.getLines()){
-            val jsObj =  JSON.parseObject(line)
-
-            val ip = jsObj.getString("ip")
-            val jsArray =  jsObj.getJSONArray("url_and_time")
-            if(jsArray.size() > max){
-                max = jsArray.size()
-                ipMax = ip
-            }
+            val items = line.split("    ")
+            val ip = items(0)
+            val urls = items(1).split(",").toBuffer
+            itemMap += (index -> ip)
+            records += urls
         }
-        println(ipMax,max)
+        new SimpleRecords(records,itemMap)
     }
 }
+
+
+
 
